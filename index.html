@@ -1,0 +1,163 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script>
+  const tafels = []
+  for (let i=1; i<11; i++) {
+    tafels.push(i)
+  }
+
+  let sommen = []
+
+  const volgendeSom = () => {
+    if (sommen.length === 0 ) {
+        klaar();
+    }
+    else {
+      let [a, b] = sommen[0]
+      let somMarkup = document.querySelector("#som").content.cloneNode(true)
+      somMarkup.querySelector(".vraag").replaceChildren( `${a} X ${b}`)
+      somMarkup.querySelector(".voortgang").replaceChildren( `Nog ${sommen.length} sommen`)
+      document.querySelector("#vraag-scherm").replaceChildren(somMarkup)
+      document.querySelector("#vraag-scherm input").focus()
+    }
+  }
+  const startVragen = (aantal) => {
+    sommen.splice(0)
+    for (let i=1; i<11; i++) {
+      for (let tafel of tafels) {
+        sommen.push([i, tafel])
+      }
+    }
+    hussel(sommen)
+    sommen.splice(aantal)
+    volgendeSom()
+    document.querySelector("#start-scherm").hidden = true
+    document.querySelector("#vraag-scherm").hidden = false
+  }
+
+  const hussel = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  const klaar = () => {
+    document.querySelector("#vraag-scherm").hidden = true
+    document.querySelector("#klaar-scherm").hidden = false
+  }
+
+  const controlleerAntwoord = () => {
+    let [a, b] = sommen[0]
+    const antwoord = document.querySelector("#vraag-scherm input").value;
+    if (a * b === parseInt(antwoord, 10)) {
+      document.querySelector("#vraag-scherm .goed").hidden = false;
+      sommen.shift();
+    }
+    else {
+      document.querySelector("#vraag-scherm .fout").hidden = false;
+      const som = sommen.shift();
+      sommen.push(som)
+    }
+    document.querySelector("#vraag-scherm button").disabled = true;
+    document.querySelector("#vraag-scherm input").disabled = true;
+    setTimeout(volgendeSom, 2000)
+  }
+
+  const toonStartScherm = () => {
+    document.querySelector("#start-scherm").hidden = false
+    document.querySelector("#vraag-scherm").hidden = true
+    document.querySelector("#klaar-scherm").hidden = true
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+  });
+
+  document.addEventListener("click", (e)=>{
+    if (e.target.name === "antwoord") {
+      controlleerAntwoord()
+      return false;
+    }
+    if (e.target.name === "herhaal") {
+      toonStartScherm()
+      return false;
+    }
+    if (e.target.name === "start") {
+      startVragen(e.target.dataset.aantal)
+      return false;
+    }
+    return false
+  })
+
+  document.addEventListener("keyup", (e)=>{
+    if (e.target.name === "antwoord-veld" && e.which === 13) {
+      controlleerAntwoord()
+      return false;
+    }
+  })
+
+</script>
+
+<style>
+body {
+  background-color: #000066;
+  color: white;
+  font-weight: bold;
+  font-family: sans-serif;
+  font-size: 20px;
+  margin-top: 40px;
+  padding: 20px;
+}
+
+#main {
+  max-width: 400px;
+  margin: auto;
+}
+
+.fout { color: yellow }
+.goed { color: cyan }
+
+#start-scherm p { 
+  text-align: center;
+}
+
+button, input {
+  background-color: black;
+  color: cyan;
+  border: 1px solid white;
+  font-size: 20px;
+}
+
+input {
+  width: 100px;
+}
+</style>
+
+<template id="som">
+  <div>
+    <p class="voortgang">...</p>
+    <p class="vraag">...</p>
+    <input name="antwoord-veld" type="tel">
+    <button name="antwoord">Goed?</button>
+    <p class="fout" hidden=true>Jammer</p>
+    <p class="goed" hidden=true>Netjes</p>
+  </div>
+</template>
+
+<div id="main">
+  <div id="start-scherm">
+    <h1>Hoeveel sommen wil je doen?</h1>
+    <!-- <p><button name="start" data-aantal=0>0</button></p> -->
+    <p><button name="start" data-aantal=10>10</button></p>
+    <p><button name="start" data-aantal=25>25</button></p>
+    <p><button name="start" data-aantal=50>50</button></p>
+    <p><button name="start" data-aantal=100>100</button></p>
+  </div>
+  <div id="klaar-scherm" hidden=true>
+    <p>Alles af! Lekker bezig.</p>
+    <button name="herhaal">Nog een keer</button>
+  </div>
+  <div id="vraag-scherm" hidden=true>
+  </div>
+</div>
+
